@@ -1,18 +1,18 @@
 import Chat from './models/Chat';
 
 export const seedPredefinedChats = async () => {
-    const predefinedChats = [
-        { firstName: 'John', lastName: 'Doe' },
-        { firstName: 'Jane', lastName: 'Smith' },
-        { firstName: 'Alice', lastName: 'Johnson' },
-    ];
+    const existingChatsCount = await Chat.countDocuments();
 
-    for (const chatData of predefinedChats) {
-        const existingChat = await Chat.findOne(chatData);
-        if (!existingChat) {
-            await Chat.create(chatData);
-        }
+    if (existingChatsCount === 0) {
+        const predefinedChats = [
+            { firstName: 'John', lastName: 'Doe' },
+            { firstName: 'Jane', lastName: 'Smith' },
+            { firstName: 'Alice', lastName: 'Johnson' },
+        ];
+
+        await Chat.insertMany(predefinedChats);
+        console.log('Predefined chats seeded successfully');
+    } else {
+        console.log('Chats already exist, skipping seeding predefined chats');
     }
-
-    console.log('Predefined chats seeded successfully');
 };
