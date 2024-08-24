@@ -51,21 +51,35 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat }) => {
         }
     };
 
+    const formatDate = (date: Date) => {
+        return date.toLocaleString('en-US', { timeZone: 'UTC' });
+    };
+
     if (!selectedChat) {
-        return <div className="chat-window">Select a chat to start messaging</div>;
+        return <div className="chat-window-empty">Select a chat to start messaging</div>;
     }
 
     return (
         <div className="chat-window">
-            <h2>{selectedChat.firstName} {selectedChat.lastName}</h2>
-            <div className="messages">
-                {messages.map((message) => (
-                    <div key={message._id} className={`message ${message.sender}`}>
-                        {message.content}
+            <div className="chat-header">
+                <img
+                    src="/default-avatar.png"
+                    alt={`${selectedChat.firstName} ${selectedChat.lastName}`} className="avatar"/>
+                <span>{`${selectedChat.firstName} ${selectedChat.lastName}`}</span>
+            </div>
+            <div className="chat-messages">
+                {messages.map(message => (
+                    <div className="message-wrapper">
+                        <div key={message._id} className={`message ${message.sender}`}>
+                            {message.content}
+                        </div>
+                        <div className="message-time" style={{color: 'grey', fontSize: '0.8em'}}>
+                            {formatDate(new Date(message.createdAt))}
+                        </div>
                     </div>
                 ))}
             </div>
-            <MessageInput onSendMessage={handleSendMessage} />
+            <MessageInput onSendMessage={handleSendMessage}/>
             {toast && (
                 <Toast
                     message={toast}

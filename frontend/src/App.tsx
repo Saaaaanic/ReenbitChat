@@ -5,12 +5,7 @@ import CreateChatDialog from './components/CreateChatDialog';
 import {getChats, createChat, updateChat, deleteChat} from './services/Api';
 import './styles/App.css';
 import UpdateChatDialog from './components/UpdateChatDialog';
-
-interface Chat {
-    _id: string;
-    firstName: string;
-    lastName: string;
-}
+import {Chat} from "./interfaces/IChat";
 
 const App: React.FC = () => {
     const [chats, setChats] = useState<Chat[]>([]);
@@ -40,6 +35,7 @@ const App: React.FC = () => {
 
     const fetchChats = async () => {
         const fetchedChats = await getChats();
+        console.log(fetchedChats);
         setChats(fetchedChats);
     };
 
@@ -62,23 +58,32 @@ const App: React.FC = () => {
 
     return (
         <div className="app">
-            <input
-                type="text"
-                placeholder="Search chats..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <ChatList
-                chats={filteredChats}
-                onSelectChat={setSelectedChat}
-                onCreateChat={() => setIsCreateDialogOpen(true)}
-                onUpdateChat={(chat) => {
-                    setSelectedChatForUpdate(chat);
-                    setIsUpdateDialogOpen(true);
-                }}
-                onDeleteChat={handleDeleteChat}
-            />
-            <ChatWindow selectedChat={selectedChat} />
+            <div className="sidebar">
+                <div className="menu">
+                    <div className="user-profile">
+                        <img src="/default-avatar.png" alt="User" className="avatar"/>
+                        <button className="log-in-button">Log in</button>
+                    </div>
+                    <div className="search-bar">
+                        <input type="text"
+                               placeholder="Search chat..."
+                               value={searchTerm}
+                               onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <button onClick={() => setIsCreateDialogOpen(true)} type="submit">+</button>
+                    </div>
+                </div>
+                <ChatList
+                    chats={filteredChats}
+                    onSelectChat={setSelectedChat}
+                    onUpdateChat={(chat) => {
+                        setSelectedChatForUpdate(chat);
+                        setIsUpdateDialogOpen(true);
+                    }}
+                    onDeleteChat={handleDeleteChat}
+                />
+            </div>
+            <ChatWindow selectedChat={selectedChat}/>
             <CreateChatDialog
                 isOpen={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}

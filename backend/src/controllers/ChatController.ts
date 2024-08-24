@@ -3,7 +3,7 @@ import Chat, { IChat } from '../models/Chat';
 
 export const getChats = async (req: Request, res: Response) => {
     try {
-        const chats = await Chat.find();
+        const chats = await Chat.find().populate('lastMessage').exec();
         res.json(chats);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching chats' });
