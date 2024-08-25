@@ -4,8 +4,6 @@ import {Chat} from "../interfaces/IChat";
 interface ChatListProps {
     chats: Chat[];
     onSelectChat: (chat: Chat) => void;
-    onUpdateChat: (chat: Chat) => void;
-    onDeleteChat: (chat: Chat) => void;
 }
 
 const formatDate = (date: Date) => {
@@ -17,7 +15,7 @@ const formatDate = (date: Date) => {
     return date.toLocaleDateString("EN-en", options);
 };
 
-const ChatList: React.FC<ChatListProps> = ({ chats, onSelectChat, onUpdateChat, onDeleteChat }) => {
+const ChatList: React.FC<ChatListProps> = ({ chats, onSelectChat}) => {
     return (
         <div className="chat-list">
             <span className="chat-label">Chats</span>
@@ -42,8 +40,6 @@ const ChatList: React.FC<ChatListProps> = ({ chats, onSelectChat, onUpdateChat, 
                             {formatDate(new Date(chat.lastMessage.createdAt))}
                             </div>
                         )}
-                        <button onClick={() => { onUpdateChat(chat); }}>Update</button>
-                        <button onClick={() => { onDeleteChat(chat); }}>Delete</button>
                     </div>
                 );
             })}

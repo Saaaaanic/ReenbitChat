@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getMessages, sendMessage } from '../services/Api';
 import MessageInput from './MessageInput';
-import Toast from './Toast';
+import { Chat } from "../interfaces/IChat";
 
 interface Message {
     _id: string;
@@ -11,12 +11,17 @@ interface Message {
 }
 
 interface ChatWindowProps {
-    selectedChat: { _id: string; firstName: string; lastName: string } | null;
+    selectedChat: Chat | null;
+    onUpdateChat: (chat: Chat) => void;
+    onDeleteChat: (chat: Chat) => void;
+    onNewMessage: (sender: string, message: string) => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onDeleteChat, onNewMessage }) => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [toast, setToast] = useState<string | null>(null);
+    const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (selectedChat) {
@@ -25,18 +30,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat }) => {
     }, [selectedChat]);
 
     useEffect(() => {
-        if (messages.length > 0) {
-            const lastMessage = messages[messages.length - 1];
-            if (lastMessage.sender === 'bot') {
-                setToast(`New message: ${lastMessage.content}`);
-            }
-        }
+        scrollToBottom();
     }, [messages]);
 
     const fetchMessages = async () => {
         if (selectedChat) {
             const fetchedMessages = await getMessages(selectedChat._id);
             setMessages(fetchedMessages);
+
+            if (fetchedMessages.length > 0) {
+                setLastMessageId(fetchedMessages[fetchedMessages.length - 1]._id);
+            }
         }
     };
 
@@ -45,14 +49,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat }) => {
             const newMessage = await sendMessage(selectedChat._id, content);
             setMessages(prevMessages => [...prevMessages, newMessage]);
 
-            setTimeout(() => {
-                fetchMessages();
-            }, 3500);
+            setTimeout(async () => {
+                const fetchedMessages = await getMessages(selectedChat._id);
+                setMessages(fetchedMessages);
+
+                const lastFetchedMessage = fetchedMessages[fetchedMessages.length - 1];
+
+                if (lastMessageId && lastFetchedMessage._id !== lastMessageId) {
+                    const senderName = `${selectedChat.firstName} ${selectedChat.lastName}`;
+                    onNewMessage(senderName, lastFetchedMessage.content);
+                    setLastMessageId(lastFetchedMessage._id);
+                }
+            }, 4500);
+        }
+    };
+
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     };
 
     const formatDate = (date: Date) => {
-        return date.toLocaleString('en-US', { timeZone: 'UTC' });
+        return date.toLocaleString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC', hour: '2-digit', minute: '2-digit' });
     };
 
     if (!selectedChat) {
@@ -62,30 +81,55 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat }) => {
     return (
         <div className="chat-window">
             <div className="chat-header">
-                <img
-                    src="/default-avatar.png"
-                    alt={`${selectedChat.firstName} ${selectedChat.lastName}`} className="avatar"/>
-                <span>{`${selectedChat.firstName} ${selectedChat.lastName}`}</span>
+                <div className="chat-info">
+                    <img
+                        src="/default-avatar.png"
+                        alt={`${selectedChat.firstName} ${selectedChat.lastName}`} className="avatar" />
+                    <span>{`${selectedChat.firstName} ${selectedChat.lastName}`}</span>
+                </div>
+                <div className="kebab-menu">
+                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="kebab-button">
+                        <span className="material-symbols-outlined">more_vert</span>
+                    </button>
+                    {isMenuOpen && (
+                        <div className="kebab-dropdown">
+                            <button onClick={() => {
+                                onUpdateChat(selectedChat);
+                                setIsMenuOpen(false);
+                            }}>Update
+                            </button>
+                            <button onClick={() => {
+                                onDeleteChat(selectedChat);
+                                setIsMenuOpen(false);
+                            }}>Delete
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
             <div className="chat-messages">
                 {messages.map(message => (
-                    <div className="message-wrapper">
-                        <div key={message._id} className={`message ${message.sender}`}>
-                            {message.content}
-                        </div>
-                        <div className="message-time" style={{color: 'grey', fontSize: '0.8em'}}>
-                            {formatDate(new Date(message.createdAt))}
+                    <div key={message._id} className={`message-wrapper ${message.sender}`}>
+                        {message.sender === 'bot' && (
+                            <img
+                                src="/default-avatar.png"
+                                alt={`${selectedChat.firstName} ${selectedChat.lastName}`}
+                                className="avatar"
+                            />
+                        )}
+                        <div className={`message-content ${message.sender}`}>
+                            <div className={`message ${message.sender}`}>
+                                {message.content}
+                            </div>
+                            <div className="message-time">
+                                {formatDate(new Date(message.createdAt))}
+                            </div>
                         </div>
                     </div>
                 ))}
+                <div ref={messagesEndRef} />
             </div>
-            <MessageInput onSendMessage={handleSendMessage}/>
-            {toast && (
-                <Toast
-                    message={toast}
-                    onClose={() => setToast(null)}
-                />
-            )}
+            <MessageInput onSendMessage={handleSendMessage} />
         </div>
     );
 };

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import ChatList from './components/ChatList';
 import ChatWindow from './components/ChatWindow';
 import CreateChatDialog from './components/CreateChatDialog';
-import {getChats, createChat, updateChat, deleteChat} from './services/Api';
+import { getChats, createChat, updateChat, deleteChat } from './services/Api';
 import './styles/App.css';
 import UpdateChatDialog from './components/UpdateChatDialog';
-import {Chat} from "./interfaces/IChat";
+import { Chat } from "./interfaces/IChat";
+import Toast from './components/Toast';
 
 const App: React.FC = () => {
     const [chats, setChats] = useState<Chat[]>([]);
@@ -15,6 +16,7 @@ const App: React.FC = () => {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
     const [selectedChatForUpdate, setSelectedChatForUpdate] = useState<Chat | null>(null);
+    const [toast, setToast] = useState<string | null>(null);
 
     useEffect(() => {
         fetchChats();
@@ -35,14 +37,14 @@ const App: React.FC = () => {
 
     const fetchChats = async () => {
         const fetchedChats = await getChats();
-        console.log(fetchedChats);
         setChats(fetchedChats);
     };
 
     const handleCreateChat = async (firstName: string, lastName: string) => {
-        await createChat(firstName, lastName);
+        const newChat = await createChat(firstName, lastName);
         fetchChats();
         setIsCreateDialogOpen(false);
+        setSelectedChat(newChat);
     };
 
     const handleUpdateChat = async (id: string, firstName: string, lastName: string) => {
@@ -54,6 +56,12 @@ const App: React.FC = () => {
     const handleDeleteChat = async (chat: Chat) => {
         await deleteChat(chat._id);
         fetchChats();
+        setSelectedChat(null);
+    };
+
+    const handleNewMessage = (sender: string, message: string) => {
+        setToast(`${sender}: ${message}`);
+        fetchChats();
     };
 
     return (
@@ -64,26 +72,32 @@ const App: React.FC = () => {
                         <img src="/default-avatar.png" alt="User" className="avatar"/>
                         <button className="log-in-button">Log in</button>
                     </div>
-                    <div className="search-bar">
-                        <input type="text"
-                               placeholder="Search chat..."
-                               value={searchTerm}
-                               onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <button onClick={() => setIsCreateDialogOpen(true)} type="submit">+</button>
+                    <div className="search-bar-wrapper">
+                        <div className="search-bar">
+                            <span className="material-symbols-outlined search-icon">search</span>
+                            <input type="text"
+                                   placeholder="Search chat..."
+                                   value={searchTerm}
+                                   onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <button className="search-bar-btn" onClick={() => setIsCreateDialogOpen(true)} type="submit">+</button>
                     </div>
                 </div>
                 <ChatList
                     chats={filteredChats}
                     onSelectChat={setSelectedChat}
-                    onUpdateChat={(chat) => {
-                        setSelectedChatForUpdate(chat);
-                        setIsUpdateDialogOpen(true);
-                    }}
-                    onDeleteChat={handleDeleteChat}
                 />
             </div>
-            <ChatWindow selectedChat={selectedChat}/>
+            <ChatWindow
+                selectedChat={selectedChat}
+                onUpdateChat={(chat) => {
+                    setSelectedChatForUpdate(chat);
+                    setIsUpdateDialogOpen(true);
+                }}
+                onDeleteChat={handleDeleteChat}
+                onNewMessage={handleNewMessage}
+            />
             <CreateChatDialog
                 isOpen={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}
@@ -95,6 +109,12 @@ const App: React.FC = () => {
                     isOpen={isUpdateDialogOpen}
                     onClose={() => setIsUpdateDialogOpen(false)}
                     onUpdateChat={handleUpdateChat}
+                />
+            )}
+            {toast && (
+                <Toast
+                    message={toast}
+                    onClose={() => setToast(null)}
                 />
             )}
         </div>

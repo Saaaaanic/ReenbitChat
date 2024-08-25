@@ -17,13 +17,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
 
     return (
         <form className="message-input" onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Type your message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-            />
-            <button type="submit">➤</button>
+            <div className="message-input-wrapper">
+                <input
+                    type="text"
+                    placeholder="Type your message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                />
+                <button type="submit">
+                    <span className="material-symbols-outlined">send</span>
+                </button>
+            </div>
         </form>
     );
 };

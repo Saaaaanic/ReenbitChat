@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ChatModal from "./ChatModal";
 
 interface UpdateChatDialogProps {
     chat: { _id: string; firstName: string; lastName: string };
@@ -22,26 +23,16 @@ const UpdateChatDialog: React.FC<UpdateChatDialogProps> = ({ chat, isOpen, onClo
     if (!isOpen) return null;
 
     return (
-        <div className="update-chat-dialog">
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                />
-                <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                />
-                <button type="submit">Update Chat</button>
-                <button type="button" onClick={onClose}>Cancel</button>
-            </form>
-        </div>
+        <ChatModal
+            title="Update Chat"
+            buttonText="Update"
+            firstName={firstName}
+            lastName={lastName}
+            onClose={onClose}
+            handleSubmit={handleSubmit}
+            setFirstName={setFirstName}
+            setLastName={setLastName}
+        />
     );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ChatModal from "./ChatModal";
 
 interface CreateChatDialogProps {
     isOpen: boolean;
@@ -22,26 +23,16 @@ const CreateChatDialog: React.FC<CreateChatDialogProps> = ({ isOpen, onClose, on
     if (!isOpen) return null;
 
     return (
-        <div className="create-chat-dialog">
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                />
-                <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                />
-                <button type="submit">Create Chat</button>
-                <button type="button" onClick={onClose}>Cancel</button>
-            </form>
-        </div>
+        <ChatModal
+            title="Create Chat"
+            buttonText="Create"
+            firstName={firstName}
+            lastName={lastName}
+            onClose={onClose}
+            handleSubmit={handleSubmit}
+            setFirstName={setFirstName}
+            setLastName={setLastName}
+        />
     );
 };
 
