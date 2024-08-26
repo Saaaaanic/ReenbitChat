@@ -179,6 +179,8 @@
   align-items: center;
   background-color: rgba(162, 162, 162, 0.1);
   justify-content: center;
+  color: rgba(72, 72, 72, 0.9);
+  font-weight: bold;
 }
 
 .chat-info {

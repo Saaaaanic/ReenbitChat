@@ -10,6 +10,16 @@ export const getChats = async (req: Request, res: Response) => {
     }
 };
 
+export const getChat = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const chats = await Chat.findById(id).populate('lastMessage').exec();
+        res.json(chats);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching chats' });
+    }
+};
+
 export const createChat = async (req: Request, res: Response) => {
     try {
         const { firstName, lastName } = req.body;

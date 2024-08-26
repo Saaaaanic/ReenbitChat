@@ -7,6 +7,11 @@ export const getChats = async () => {
     return response.data;
 };
 
+export const getChat = async (id: string) => {
+    const response = await axios.get(`${API_URL}/chats/${id}`);
+    return response.data;
+};
+
 export const createChat = async (firstName: string, lastName: string) => {
     const response = await axios.post(`${API_URL}/chats`, { firstName, lastName });
     return response.data;

@@ -59,9 +59,10 @@ const App: React.FC = () => {
         setSelectedChat(null);
     };
 
-    const handleNewMessage = (sender: string, message: string) => {
+    const handleNewMessage = (chat: Chat, sender: string, message: string) => {
         setToast(`${sender}: ${message}`);
         fetchChats();
+        setSelectedChat(chat);
     };
 
     return (

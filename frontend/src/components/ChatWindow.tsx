@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getMessages, sendMessage } from '../services/Api';
+import {getChat, getChats, getMessages, sendMessage} from '../services/Api';
 import MessageInput from './MessageInput';
 import { Chat } from "../interfaces/IChat";
 
@@ -8,18 +8,19 @@ interface Message {
     content: string;
     sender: 'user' | 'bot';
     createdAt: string;
+    chatId: string;
 }
 
 interface ChatWindowProps {
     selectedChat: Chat | null;
     onUpdateChat: (chat: Chat) => void;
     onDeleteChat: (chat: Chat) => void;
-    onNewMessage: (sender: string, message: string) => void;
+    onNewMessage: (chat: Chat, sender: string, message: string) => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onDeleteChat, onNewMessage }) => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+    const [lastMessage, setLastMessage] = useState<Message | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +40,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onD
             setMessages(fetchedMessages);
 
             if (fetchedMessages.length > 0) {
-                setLastMessageId(fetchedMessages[fetchedMessages.length - 1]._id);
+                setLastMessage(fetchedMessages[fetchedMessages.length - 1]);
             }
         }
     };
@@ -55,10 +56,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onD
 
                 const lastFetchedMessage = fetchedMessages[fetchedMessages.length - 1];
 
-                if (lastMessageId && lastFetchedMessage._id !== lastMessageId) {
+                if (lastMessage && lastFetchedMessage._id !== lastMessage._id) {
                     const senderName = `${selectedChat.firstName} ${selectedChat.lastName}`;
-                    onNewMessage(senderName, lastFetchedMessage.content);
-                    setLastMessageId(lastFetchedMessage._id);
+                    onNewMessage(await getChat(lastMessage.chatId), senderName, lastFetchedMessage.content);
+                    setLastMessage(lastFetchedMessage._id);
                 }
             }, 4500);
         }
