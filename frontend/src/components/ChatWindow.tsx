@@ -23,6 +23,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onD
     const [lastMessage, setLastMessage] = useState<Message | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     useEffect(() => {
         if (selectedChat) {
@@ -33,6 +34,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onD
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    const handleDelete = () => {
+        setIsDeleteConfirmOpen(true);
+        setIsMenuOpen(false);
+    };
+
+    const confirmDelete = () => {
+        if(selectedChat) {
+            onDeleteChat(selectedChat);
+            setIsDeleteConfirmOpen(false);
+        }
+    };
 
     const fetchMessages = async () => {
         if (selectedChat) {
@@ -99,11 +112,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onD
                                 setIsMenuOpen(false);
                             }}>Update
                             </button>
-                            <button onClick={() => {
-                                onDeleteChat(selectedChat);
-                                setIsMenuOpen(false);
-                            }}>Delete
-                            </button>
+                            <button onClick={handleDelete}>Delete</button>
                         </div>
                     )}
                 </div>
@@ -131,6 +140,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChat, onUpdateChat, onD
                 <div ref={messagesEndRef} />
             </div>
             <MessageInput onSendMessage={handleSendMessage} />
+            {isDeleteConfirmOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Confirm Deletion</h2>
+                        <button className="material-symbols-outlined" type="button" onClick={() => setIsDeleteConfirmOpen(false)}>close</button>
+                        <p>Are you sure you want to delete this chat?</p>
+                        <div className="modal-actions">
+                            <button onClick={confirmDelete}>Yes, delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
